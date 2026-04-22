@@ -1,4 +1,4 @@
-package com.example.appmibancosem2.data.model.local
+package com.example.appmibancosem2.data.local
 
 import android.content.ContentValues
 import android.content.Context
@@ -10,7 +10,7 @@ import java.util.Date
 import java.util.Locale
 
 class SolicitudDatabase(context: Context) :
-    SQLiteOpenHelper(context, "mibanco.db", null, 1) {
+    SQLiteOpenHelper(context, "mibanco.db", null, 2) { // 🔥 versión subida a 2
 
     companion object {
         const val TABLA = "solicitudes_credito"
@@ -38,15 +38,15 @@ class SolicitudDatabase(context: Context) :
         db.execSQL(createTable)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, old: Int, new: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLA")
-        onCreate(db)
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        onCreate(db) // solo crea si no existe
     }
 
     // CREATE
     fun insertar(s: SolicitudCredito): Long {
         val db = writableDatabase
         val ts = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+
         val cv = ContentValues().apply {
             put(COL_MONTO, s.monto)
             put(COL_PLAZO, s.plazoMeses)
@@ -55,6 +55,7 @@ class SolicitudDatabase(context: Context) :
             put(COL_ESTADO, s.estado)
             put(COL_FECHA, ts)
         }
+
         val id = db.insert(TABLA, null, cv)
         db.close()
         return id
@@ -64,20 +65,25 @@ class SolicitudDatabase(context: Context) :
     fun obtenerTodas(): List<SolicitudCredito> {
         val lista = mutableListOf<SolicitudCredito>()
         val db = readableDatabase
+
         val cursor = db.query(TABLA, null, null, null, null, null, "$COL_ID DESC")
+
         if (cursor.moveToFirst()) {
             do {
-                lista.add(SolicitudCredito(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
-                    monto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_MONTO)),
-                    plazoMeses = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PLAZO)),
-                    tipo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIPO)),
-                    dni = cursor.getString(cursor.getColumnIndexOrThrow(COL_DNI)),
-                    estado = cursor.getString(cursor.getColumnIndexOrThrow(COL_ESTADO)),
-                    fechaLocal = cursor.getString(cursor.getColumnIndexOrThrow(COL_FECHA))
-                ))
+                lista.add(
+                    SolicitudCredito(
+                        id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                        monto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_MONTO)),
+                        plazoMeses = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PLAZO)),
+                        tipo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIPO)),
+                        dni = cursor.getString(cursor.getColumnIndexOrThrow(COL_DNI)),
+                        estado = cursor.getString(cursor.getColumnIndexOrThrow(COL_ESTADO)),
+                        fechaLocal = cursor.getString(cursor.getColumnIndexOrThrow(COL_FECHA))
+                    )
+                )
             } while (cursor.moveToNext())
         }
+
         cursor.close()
         db.close()
         return lista
@@ -86,7 +92,10 @@ class SolicitudDatabase(context: Context) :
     // UPDATE
     fun actualizarEstado(id: Int, nuevoEstado: String): Int {
         val db = writableDatabase
-        val cv = ContentValues().apply { put(COL_ESTADO, nuevoEstado) }
+        val cv = ContentValues().apply {
+            put(COL_ESTADO, nuevoEstado)
+        }
+
         val res = db.update(TABLA, cv, "$COL_ID = ?", arrayOf(id.toString()))
         db.close()
         return res
@@ -103,8 +112,13 @@ class SolicitudDatabase(context: Context) :
     // COUNT
     fun contarPendientes(): Int {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLA WHERE $COL_ESTADO = 'pendiente'", null)
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLA WHERE $COL_ESTADO = 'pendiente'",
+            null
+        )
+
         val count = if (cursor.moveToFirst()) cursor.getInt(0) else 0
+
         cursor.close()
         db.close()
         return count

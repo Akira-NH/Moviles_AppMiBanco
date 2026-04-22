@@ -12,18 +12,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appmibancosem2.ui.theme.*
+import com.example.appmibancosem2.data.local.UsuarioDatabase // 👈 IMPORTANTE
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
+
     var email    by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error    by remember { mutableStateOf("") }
+
+    // 📌 Contexto y DB
+    val context = LocalContext.current
+    val db = remember { UsuarioDatabase(context) }
 
     Box(
         modifier = Modifier
@@ -54,6 +60,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     fontSize = 14.sp,
                     color    = GoldAccent
                 )
+
                 Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
@@ -84,7 +91,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 )
 
                 if (error.isNotEmpty()) {
-                    Text(text = error, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
                 }
 
                 Button(
@@ -92,7 +103,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         if (email.isBlank() || password.isBlank()) {
                             error = "Completa todos los campos"
                         } else {
-                            onLoginSuccess()
+
+                            val valido = db.validarUsuario(email, password)
+
+                            if (valido) {
+                                onLoginSuccess()
+                            } else {
+                                error = "Credenciales incorrectas"
+                            }
                         }
                     },
                     modifier = Modifier

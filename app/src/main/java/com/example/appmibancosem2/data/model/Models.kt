@@ -57,7 +57,7 @@ object DemoData {
         numero  = "002-123456789",
         tipo    = "Cuenta Corriente",
         saldo   = 8_450.75,
-        titular = "Carlos Mendoza Ríos"
+        titular = "Willy "
     )
 
     val transacciones = listOf(

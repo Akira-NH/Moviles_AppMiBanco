@@ -57,7 +57,12 @@ fun MiBancoNavGraph(navController: NavHostController) {
             AhorroScreen(onBack = { navController.popBackStack() })
         }
 
-
+        // 💳 Módulo Solicitud de Crédito
+        composable(Screen.SolicitudCredito.route) {
+            SolicitudCreditoScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         // 🗄️ SEMANA 6 - Historial de Solicitudes (SQLite)
         composable(Screen.Historial.route) {

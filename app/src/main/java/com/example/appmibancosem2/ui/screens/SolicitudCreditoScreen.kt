@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appmibancosem2.ui.theme.*
-import com.example.appmibancosem2.data.model.local.SolicitudDatabase
+import com.example.appmibancosem2.data.local.SolicitudDatabase
 import com.example.appmibancosem2.data.model.SolicitudCredito
 
 private const val PREFS_SOLICITUD = "borrador_solicitud"
